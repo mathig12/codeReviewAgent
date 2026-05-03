@@ -39,21 +39,47 @@ async function main() {
     console.log(`🌿 Created branch: ${branchName}`);
 
     // 3. Make a meaningful code change
-    const demoFilePath = path.join(__dirname, '..', 'src', `demo-feature-${timestamp}.ts`);
+    const demoFilePath = path.join(__dirname, '..', 'src', `calculator-${timestamp}.ts`);
     const demoContent = `
-export function automatedTestFeature_${timestamp}() {
-  const message = "This is a meaningful feature added automatically!";
-  console.log(message);
-  return message;
+/**
+ * Simple calculator utility.
+ * Added for testing the Code Review Agent's ability to catch bugs and bad practices.
+ */
+
+export class Calculator {
+  // Intentional bad practice: public properties without initialization
+  public result: any; 
+
+  constructor() {
+    console.log("Calculator initialized");
+  }
+
+  add(a: number, b: number) {
+    this.result = a + b;
+    return this.result;
+  }
+
+  // Intentional bug: division by zero is not handled
+  divide(a: number, b: number) {
+    return a / b;
+  }
+  
+  // Intentional bad practice: using 'any' and hardcoded values
+  processData(data: any) {
+    if (data == "100") {
+      return true;
+    }
+    return false;
+  }
 }
 `;
     fs.writeFileSync(demoFilePath, demoContent.trim());
-    console.log(`✍️ Created meaningful file: src/demo-feature-${timestamp}.ts`);
+    console.log(`✍️ Created realistic feature file with intentional bugs: src/calculator-${timestamp}.ts`);
 
     // 4. Commit and push the change
     // Using explicit file add instead of "git add ." to prevent committing WIP changes
-    runCmd(`git add src/demo-feature-${timestamp}.ts`);
-    runCmd(`git commit -m "feat: automated feature testing agent ${timestamp}"`);
+    runCmd(`git add src/calculator-${timestamp}.ts`);
+    runCmd(`git commit -m "feat: add calculator utility module ${timestamp}"`);
     console.log(`✅ Committed changes`);
 
     runCmd(`git push -u origin ${branchName}`);
