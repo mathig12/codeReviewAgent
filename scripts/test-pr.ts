@@ -22,9 +22,11 @@ async function main() {
   try {
     console.log("🚀 Starting Automated E2E PR Test");
 
+    // 0. Capture current branch to switch back later
+    const originalBranch = runCmd('git rev-parse --abbrev-ref HEAD');
+
     // 1. Get repository info from git remote
     const remoteOriginUrl = runCmd('git config --get remote.origin.url');
-    // Extracts mathig12/codeReviewAgent from https://github.com/mathig12/codeReviewAgent.git
     const repoMatch = remoteOriginUrl.match(/github\.com[/:](.+?)(?:\.git)?$/);
     if (!repoMatch || !repoMatch[1]) {
       throw new Error(`Could not determine GitHub repository from remote URL: ${remoteOriginUrl}`);
@@ -38,16 +40,18 @@ async function main() {
     runCmd(`git checkout -b ${branchName}`);
     console.log(`🌿 Created branch: ${branchName}`);
 
-    // 3. Make a meaningful code change
-    const demoFilePath = path.join(__dirname, '..', 'src', `calculator-${timestamp}.ts`);
-    const demoContent = `
+    // 3. Make a meaningful code change - Pick a random dynamic scenario
+    const scenarios = [
+      {
+        name: 'calculator',
+        filePrefix: 'calculator',
+        commitMsg: 'feat: add calculator utility module',
+        content: `
 /**
  * Simple calculator utility.
  * Added for testing the Code Review Agent's ability to catch bugs and bad practices.
  */
-
 export class Calculator {
-  // Intentional bad practice: public properties without initialization
   public result: any; 
 
   constructor() {
@@ -59,12 +63,10 @@ export class Calculator {
     return this.result;
   }
 
-  // Intentional bug: division by zero is not handled
   divide(a: number, b: number) {
     return a / b;
   }
   
-  // Intentional bad practice: using 'any' and hardcoded values
   processData(data: any) {
     if (data == "100") {
       return true;
@@ -72,14 +74,65 @@ export class Calculator {
     return false;
   }
 }
-`;
-    fs.writeFileSync(demoFilePath, demoContent.trim());
-    console.log(`✍️ Created realistic feature file with intentional bugs: src/calculator-${timestamp}.ts`);
+`
+      },
+      {
+        name: 'authenticator',
+        filePrefix: 'auth-service',
+        commitMsg: 'feat: implement basic auth service',
+        content: `
+/**
+ * Authentication service.
+ */
+export class AuthService {
+  private readonly SECRET = "my_super_secret_key_123";
+
+  login(username: string, password: any) {
+    if (username == "admin" && password == "admin123") {
+      return this.generateToken(username);
+    }
+    return null; 
+  }
+
+  generateToken(user: string) {
+    const token = user + "_" + this.SECRET + "_" + Date.now();
+    return token;
+  }
+}
+`
+      },
+      {
+        name: 'data-fetcher',
+        filePrefix: 'api-client',
+        commitMsg: 'feat: add api client for user data',
+        content: `
+/**
+ * API Client for fetching data.
+ */
+import axios from 'axios';
+
+export async function fetchUserData(userId: string) {
+  const response = await axios.get("https://api.example.com/users/" + userId);
+  const data = response.data;
+  data.processedAt = new Date().toISOString();
+  return data;
+}
+
+fetchUserData("123");
+`
+      }
+    ];
+
+    const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+    const fileName = `${randomScenario.filePrefix}-${timestamp}.ts`;
+    const demoFilePath = path.join(__dirname, '..', 'src', fileName);
+    
+    fs.writeFileSync(demoFilePath, randomScenario.content.trim());
+    console.log(`✍️ Created dynamic feature file (${randomScenario.name}): src/${fileName}`);
 
     // 4. Commit and push the change
-    // Using explicit file add instead of "git add ." to prevent committing WIP changes
-    runCmd(`git add src/calculator-${timestamp}.ts`);
-    runCmd(`git commit -m "feat: add calculator utility module ${timestamp}"`);
+    runCmd(`git add src/${fileName}`);
+    runCmd(`git commit -m "${randomScenario.commitMsg} ${timestamp}"`);
     console.log(`✅ Committed changes`);
 
     runCmd(`git push -u origin ${branchName}`);
@@ -89,17 +142,16 @@ export class Calculator {
     console.log(`🐙 Creating Pull Request...`);
     const apiUrl = `https://api.github.com/repos/${repoFullName}/pulls`;
     
-    // Check if we are currently branching off main or master
+    // Determine base branch (usually main or master)
     let baseBranch = 'main';
     try {
       runCmd('git rev-parse --verify origin/main');
     } catch {
       try {
         runCmd('git rev-parse --verify origin/master');
-        baseBranch = 'master'; // Fallback
+        baseBranch = 'master';
       } catch {
-        // If even master doesn't exist, try to use whatever branch we branched off of
-        baseBranch = runCmd('git rev-parse --abbrev-ref HEAD');
+        baseBranch = originalBranch; // Fallback to whatever we started on
       }
     }
 
@@ -123,8 +175,8 @@ export class Calculator {
     console.log(`🎉 Success! Pull Request created at: ${prUrl}`);
     
     // Switch back to original branch
-    runCmd(`git checkout ${baseBranch}`);
-    console.log(`🔙 Switched back to ${baseBranch}`);
+    runCmd(`git checkout ${originalBranch}`);
+    console.log(`🔙 Switched back to ${originalBranch}`);
     
   } catch (error: any) {
     console.error('❌ Automation failed:', error.message || error);
