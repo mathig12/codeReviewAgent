@@ -124,6 +124,8 @@ fetchUserData("123");
     ];
 
     const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
+    if (!randomScenario) throw new Error("Could not select a random scenario");
+    
     const fileName = `${randomScenario.filePrefix}-${timestamp}.ts`;
     const demoFilePath = path.join(__dirname, '..', 'src', fileName);
     

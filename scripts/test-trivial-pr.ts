@@ -22,6 +22,9 @@ async function main() {
   try {
     console.log("🚀 Starting Trivial E2E PR Test (Meaningless Change)");
 
+    // 0. Capture current branch to switch back later
+    const originalBranch = runCmd('git rev-parse --abbrev-ref HEAD');
+
     // 1. Get repository info from git remote
     const remoteOriginUrl = runCmd('git config --get remote.origin.url');
     const repoMatch = remoteOriginUrl.match(/github\.com[/:](.+?)(?:\.git)?$/);
@@ -63,7 +66,7 @@ async function main() {
         runCmd('git rev-parse --verify origin/master');
         baseBranch = 'master';
       } catch {
-        baseBranch = runCmd('git rev-parse --abbrev-ref HEAD');
+        baseBranch = originalBranch;
       }
     }
 
@@ -87,8 +90,8 @@ async function main() {
     console.log(`🎉 Success! Trivial Pull Request created at: ${prUrl}`);
     
     // Switch back to original branch
-    runCmd(`git checkout ${baseBranch}`);
-    console.log(`🔙 Switched back to ${baseBranch}`);
+    runCmd(`git checkout ${originalBranch}`);
+    console.log(`🔙 Switched back to ${originalBranch}`);
     
   } catch (error: any) {
     console.error('❌ Trivial automation failed:', error.message || error);
