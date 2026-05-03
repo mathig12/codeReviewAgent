@@ -25,6 +25,15 @@ export class ReviewOrchestrator {
         metadataAgent.run()
       ]);
 
+      if (!diffResult.isMeaningful) {
+        console.log(`[Orchestrator] PR #${prMetadata.prNumber} is trivial. Skipping AI Review.`);
+        const { GithubAPI } = await import('../api/github');
+        const githubApi = new GithubAPI();
+        const skipMessage = `## 🤖 AI Code Review Agent\n\nSkipping AI Review because the changes appear to be trivial (e.g., only modifying text files or non-code files).`;
+        await githubApi.postComment(prMetadata.repoFullName, prMetadata.prNumber, skipMessage);
+        return;
+      }
+
       console.log('[Orchestrator] Agents completed successfully. Proceeding to Decision Maker...');
 
       // Pass results to the Decision Maker
