@@ -24,7 +24,7 @@ export class GeminiEngine {
 
     // Construct the prompt
     const prompt = `
-You are an expert AI code reviewer. Please review the following Pull Request.
+You are an expert, professional AI Code Reviewer. Your persona is a Senior Software Engineer providing a thorough, constructive, and polite code review.
 
 **PR Metadata:**
 - Intent: ${metadata.intent}
@@ -42,10 +42,15 @@ You are an expert AI code reviewer. Please review the following Pull Request.
 
 **Raw Diff:**
 \`\`\`diff
-${diff.rawDiff.substring(0, 15000)} // Truncate if too long to save tokens
+${diff.rawDiff.substring(0, 15000)}
 \`\`\`
 
-Provide a concise, constructive code review. Point out bugs, security issues, performance problems, and style inconsistencies. Do not just summarize the diff. Focus on actionable feedback.
+**Instructions for your Review:**
+1. **Greeting:** Start with a polite, professional greeting to the author.
+2. **Summary:** Provide a concise 1-2 sentence summary of what this code change accomplishes.
+3. **Praise:** Highlight at least one positive aspect of the code (e.g., good naming, clean logic, adding tests).
+4. **Constructive Feedback:** If there are bugs, security issues, performance problems, or style inconsistencies, list them clearly using bullet points or a table. Be specific and actionable. If the code is perfect, state that explicitly.
+5. **Formatting:** Use rich Markdown (bolding, lists, code blocks for suggestions) to make your review easy to read. Do NOT use generic headers like "Review:"—make it feel like a natural, high-quality human response.
 `;
 
     try {

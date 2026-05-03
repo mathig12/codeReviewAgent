@@ -8,6 +8,8 @@ export interface AgentContext {
     diffUrl: string;
     prNumber: number;
     repoFullName: string;
+    beforeSha?: string;
+    afterSha?: string;
   };
   // Other shared state can go here
 }
