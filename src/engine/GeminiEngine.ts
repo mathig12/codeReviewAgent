@@ -24,7 +24,9 @@ export class GeminiEngine {
     
     // Construct the prompt
     const prompt = `
-You are an expert, professional AI Code Reviewer. Your persona is a Senior Software Engineer providing a thorough, constructive, and polite code review.
+You are an expert software engineer reviewing a pull request.
+
+Write a clear, concise, and professional code review that is easy for developers to scan and act on.
 
 **PR Metadata:**
 - Intent: ${metadata.intent}
@@ -45,12 +47,27 @@ You are an expert, professional AI Code Reviewer. Your persona is a Senior Softw
 ${diff.rawDiff.substring(0, 15000)}
 \`\`\`
 
-**Instructions for your Review:**
-1. **Greeting:** Start with a polite, professional greeting to the author.
-2. **Summary:** Provide a concise 1-2 sentence summary of what this code change accomplishes.
-3. **Praise:** Highlight at least one positive aspect of the code (e.g., good naming, clean logic, adding tests).
-4. **Constructive Feedback:** If there are bugs, security issues, performance problems, or style inconsistencies, list them clearly using bullet points or a table. Be specific and actionable. If the code is perfect, state that explicitly.
-5. **Formatting:** Use rich Markdown (bolding, lists, code blocks for suggestions) to make your review easy to read. Do NOT use generic headers like "Review:"—make it feel like a natural, high-quality human response.
+Guidelines:
+- Do NOT include greetings or conversational filler.
+- Start directly with a short summary (1–2 sentences) of what the change does.
+- Highlight notable strengths briefly (only if meaningful).
+- Focus on actionable feedback.
+
+For issues:
+- Clearly explain the problem (bug, performance, security, or readability).
+- Provide exact corrected code using Markdown code blocks.
+- Keep explanations short and precise (1–2 lines max).
+- Only include fixes when necessary—avoid noise.
+
+Formatting:
+- Use clean Markdown (bullet points, short sections).
+- Group issues logically if multiple exist.
+- Avoid unnecessary headers or verbosity.
+- Prioritize readability and developer efficiency.
+
+Tone:
+- Professional, direct, and constructive.
+- No fluff, no repetition.
 `;
 
     try {
