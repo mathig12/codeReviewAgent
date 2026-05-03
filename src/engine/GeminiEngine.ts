@@ -21,7 +21,7 @@ export class GeminiEngine {
     metadata: MetadataResult
   ): Promise<string> {
     console.log('[GeminiEngine] Analyzing PR diff...');
-    
+
     // Construct the prompt
     const prompt = `
 You are an expert AI code reviewer. Please review the following Pull Request.
@@ -50,7 +50,7 @@ Provide a concise, constructive code review. Point out bugs, security issues, pe
 
     try {
       const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-pro',
+        model: 'gemini-1.5-flash',
         contents: prompt,
       });
 
