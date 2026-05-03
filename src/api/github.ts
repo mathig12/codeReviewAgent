@@ -34,6 +34,22 @@ export class GithubAPI {
     }
   }
 
+  async getCommitDiff(repoFullName: string, beforeSha: string, afterSha: string): Promise<string> {
+    const url = `https://api.github.com/repos/${repoFullName}/compare/${beforeSha}...${afterSha}`;
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          Accept: 'application/vnd.github.v3.diff',
+        },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error(`Error fetching commit diff ${beforeSha}...${afterSha}:`, error.message);
+      throw error;
+    }
+  }
+
   async postComment(repoFullName: string, prNumber: number, body: string): Promise<void> {
     const url = `https://api.github.com/repos/${repoFullName}/issues/${prNumber}/comments`;
     try {

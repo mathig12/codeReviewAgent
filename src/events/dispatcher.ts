@@ -11,6 +11,10 @@ export async function handleGithubWebhook(payload: any) {
     
     console.log(`[Dispatcher] Received ${action} event for PR #${prNumber} in ${repoFullName}`);
     
+    // If the action is synchronize, we capture the before/after SHAs to do a per-commit review
+    const beforeSha = action === 'synchronize' ? payload.before : undefined;
+    const afterSha = action === 'synchronize' ? payload.after : undefined;
+
     // Extract basic PR metadata
     const prMetadata = {
       title: payload.pull_request.title,
@@ -20,7 +24,9 @@ export async function handleGithubWebhook(payload: any) {
       headBranch: payload.pull_request.head.ref,
       diffUrl,
       prNumber,
-      repoFullName
+      repoFullName,
+      beforeSha,
+      afterSha
     };
 
     // Trigger the orchestrator

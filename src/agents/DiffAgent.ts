@@ -19,8 +19,15 @@ export class DiffAgent extends BaseAgent<DiffResult> {
   async run(): Promise<DiffResult> {
     console.log('[DiffAgent] Fetching and parsing diff...');
     
-    const diffUrl = this.context.prMetadata.diffUrl;
-    const rawDiff = await this.githubApi.getDiff(diffUrl);
+    const { diffUrl, repoFullName, beforeSha, afterSha } = this.context.prMetadata;
+    
+    let rawDiff = '';
+    if (beforeSha && afterSha) {
+      console.log(`[DiffAgent] Fetching per-commit diff for ${beforeSha}...${afterSha}`);
+      rawDiff = await this.githubApi.getCommitDiff(repoFullName, beforeSha, afterSha);
+    } else {
+      rawDiff = await this.githubApi.getDiff(diffUrl);
+    }
     
     // Simple parsing heuristics
     const lines = rawDiff.split('\n');
